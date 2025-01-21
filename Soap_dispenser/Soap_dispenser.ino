@@ -20,8 +20,8 @@ LiquidCrystal_I2C lcd(0x27, 16, 2); // Set the LCD address to 0x27 for a 16x2 LC
 
 // Water flow sensor variables
 volatile unsigned long pulse_count = 0; // Pulse count from the flow sensor
-double total_volume = 0;                // Total volume in liters
-unsigned int target_volume = 0;         // User-defined volume target
+float total_volume = 0;                // Total volume in liters
+float target_volume = 0;         // User-defined volume target
 
 // Relay setup
 const int relay_pin = 11;
@@ -49,9 +49,10 @@ void loop() {
     static String input = ""; // To store the user's input
     if (key == '#') { // Confirm the input
       target_volume = input.toInt(); // Convert input to an integer
+//      target_volume=target_volume*0.07;
       input = ""; // Clear the input string
 
-      if (target_volume > 0) {
+      if (target_volume>0) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Target: ");
@@ -82,6 +83,8 @@ void loop() {
 }
 
 void startPumping() {
+  target_volume=target_volume*0.07;  //for panel A
+//  target_volume=target_volume*0.017; //for panel B
   total_volume = 0; // Reset total volume
   pulse_count = 0;  // Reset pulse count
   digitalWrite(relay_pin, HIGH); // Turn on the pump
@@ -91,8 +94,8 @@ void startPumping() {
   lcd.setCursor(0, 0);
   lcd.print("Dispensing...");
   delay(500);
-  const double correction_factor = 1.38; // Adjust for 10% error margin
-
+  const double correction_factor = 1.07; // Adjust for 10% error margin  
+  
   while (total_volume < target_volume) {
     // Calculate total volume
     total_volume = 0.00225 * pulse_count* correction_factor;; // Convert pulse count to liters
